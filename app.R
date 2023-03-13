@@ -62,6 +62,7 @@ notif_prev  <- get_timestamped_csv('TB_notifications', csv_datestamp) %>%
   rowwise() %>% 
   mutate(c_notified = sum (ret_nrel, c_newinc, na.rm=T),
          c_rrmdr_tx = sum (conf_rrmdr_tx,unconf_mdr_tx,conf_mdr_tx, unconf_rr_nfqr_tx,conf_rr_nfqr_tx,na.rm=T),
+         c_dstb_tx = c_notified - c_rrmdr_tx,
          c_xdr_tx = sum (conf_xdr_tx,conf_rr_fqr_tx,na.rm=T))
 
 notif_temp  <- get_timestamped_csv('latest_notifications', csv_datestamp) %>%
@@ -70,7 +71,8 @@ notif_temp  <- get_timestamped_csv('latest_notifications', csv_datestamp) %>%
          c_notified,
          c_rrmdr_tx = conf_rr_nfqr_tx,
          c_xdr_tx = conf_rr_fqr_tx
-  )
+  ) %>%
+  mutate(c_dstb_tx = c_notified - c_rrmdr_tx)
 
 tpt_prev <- get_timestamped_csv('TB_contact_tpt', csv_datestamp)
 tpt_temp <- get_timestamped_csv('latest_strategy', csv_datestamp) %>% mutate(year=2022) # dummy
@@ -79,7 +81,7 @@ tpt_temp <- get_timestamped_csv('latest_strategy', csv_datestamp) %>% mutate(yea
 budget <- plyr::rbind.fill(budget_prev,budget_temp) %>% arrange(country)
 expend <- plyr::rbind.fill(expend_prev,expend_temp) %>% arrange(country)
 notif  <- plyr::rbind.fill(notif_prev,notif_temp) %>%
-  select(country,year,c_notified,c_rrmdr_tx,c_xdr_tx) %>%
+  select(country,year,c_notified,c_dstb_tx,c_rrmdr_tx,c_xdr_tx) %>%
   arrange(country)
 tpt <- plyr::rbind.fill(tpt_prev,tpt_temp) %>% arrange(country)
 
@@ -936,13 +938,14 @@ server <- function(input, output, session) {
       full_join(select(notif, country, year, 
                        c_notified,
                        c_rrmdr_tx,
+                       c_dstb_tx,
                        c_xdr_tx
       ), by = c("country","year")) %>%
       mutate(year=as.factor(year)) %>%
       mutate(est_budget_cpp_dstb = round(budget_fld/tx_dstb,0),
              est_budget_cpp_mdr  = round(budget_sld/tx_mdr,0),
              est_budget_cpp_tpt  = round(budget_tpt/tx_tpt,1),
-             est_expend_cpp_dstb = round(exp_fld/c_notified,0),
+             est_expend_cpp_dstb = round(exp_fld/c_dstb_tx,0),
              est_expend_cpp_mdr  = round(exp_sld/c_rrmdr_tx,0),
              est_expend_cpp_tpt  = round(exp_tpt/newinc_con_prevtx,1),
                ) %>%
