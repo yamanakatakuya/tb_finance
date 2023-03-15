@@ -45,17 +45,17 @@ NZ <- function(x) {
 
 # Load data
 
-finance_prev <- haven::read_stata("./csv/finance2021.dta")
+finance_prev <- haven::read_stata("./csv/finance2022_13MAR2023.dta")
 
-budget_prev <- get_timestamped_csv('TB_budget', csv_datestamp)
-expend_prev <- get_timestamped_csv('TB_expenditure_utilisation', csv_datestamp)
+# budget_prev <- get_timestamped_csv('TB_budget', csv_datestamp)
+# expend_prev <- get_timestamped_csv('TB_expenditure_utilisation', csv_datestamp)
 
 budget_temp <- get_timestamped_csv('latest_budgets', csv_datestamp) %>% mutate(year=2023) # dummy
 expend_temp <- get_timestamped_csv('latest_expenditures_services', csv_datestamp) %>% mutate(year=2022) # dummy
 
 notif_prev  <- get_timestamped_csv('TB_notifications', csv_datestamp) %>%
   filter(year>2009) %>%
-  select(country,iso3,year,
+  select(country,iso2,year,
          ret_nrel, c_newinc,
          conf_rrmdr_tx,unconf_mdr_tx,conf_mdr_tx,conf_xdr_tx,unconf_rr_nfqr_tx,conf_rr_nfqr_tx,conf_rr_fqr_tx
   ) %>%
@@ -78,26 +78,26 @@ tpt_prev <- get_timestamped_csv('TB_contact_tpt', csv_datestamp)
 tpt_temp <- get_timestamped_csv('latest_strategy', csv_datestamp) %>% mutate(year=2022) # dummy
 
 
-budget <- plyr::rbind.fill(budget_prev,budget_temp) %>% arrange(country)
-expend <- plyr::rbind.fill(expend_prev,expend_temp) %>% arrange(country)
+budget <- plyr::rbind.fill(finance_prev,budget_temp) %>% arrange(country)
+expend <- plyr::rbind.fill(finance_prev,expend_temp) %>% arrange(country)
 notif  <- plyr::rbind.fill(notif_prev,notif_temp) %>%
   select(country,year,c_notified,c_dstb_tx,c_rrmdr_tx,c_xdr_tx) %>%
   arrange(country)
 tpt <- plyr::rbind.fill(tpt_prev,tpt_temp) %>% arrange(country)
 
-common_cols <- intersect(colnames(budget), colnames(finance_prev))
-
-budget <- rbind(
-  subset(budget, select = common_cols), 
-  subset(finance_prev, year>2009&year<2018, select = common_cols)
-) %>% arrange(country, year)
-
-common_cols <- intersect(colnames(expend), colnames(finance_prev))
-
-expend <- rbind(
-  subset(expend, select = common_cols), 
-  subset(finance_prev, year>2009&year<2017, select = common_cols)
-) %>% arrange(country, year)
+# common_cols <- intersect(colnames(budget), colnames(finance_prev))
+# 
+# budget <- rbind(
+#   subset(budget, select = common_cols), 
+#   subset(finance_prev, year>2009, select = common_cols)
+# ) %>% arrange(country, year)
+# 
+# common_cols <- intersect(colnames(expend), colnames(finance_prev))
+# 
+# expend <- rbind(
+#   subset(expend, select = common_cols), 
+#   subset(finance_prev, year>2009, select = common_cols)
+# ) %>% arrange(country, year)
 
 
 
@@ -387,7 +387,7 @@ server <- function(input, output, session) {
   df_b1 <- reactive({
     
   df_b1 <- budget %>%
-    select(country,iso3,year,
+    select(country,iso2,year,
            budget_fld,
            budget_staff,
            budget_prog,
@@ -444,7 +444,7 @@ server <- function(input, output, session) {
   df_b2 <- reactive({
     
     df_b2 <- budget %>%
-      select(country,iso3,year,
+      select(country,iso2,year,
            `Domestic` = cf_tot_domestic ,
            `Global Fund` = cf_tot_gf,
            `USAID` =  cf_tot_usaid,
@@ -558,7 +558,7 @@ server <- function(input, output, session) {
   df_e1 <- reactive({
     
   df_e1 <- expend %>%
-    select(country,iso3,year,
+    select(country,iso2,year,
            exp_fld,
            exp_staff,
            exp_prog,
@@ -613,7 +613,7 @@ server <- function(input, output, session) {
   df_e2 <- reactive({
 
     df_e2 <- expend %>%
-    select(country,iso3,year,
+    select(country,iso2,year,
            rcvd_fld,
            rcvd_staff,
            rcvd_prog,
@@ -667,7 +667,7 @@ server <- function(input, output, session) {
   df_e3 <- reactive({
     
     df_e3 <- expend %>%
-    select(country,iso3,year,
+    select(country,iso2,year,
            `Domestic` = rcvd_tot_domestic ,
            `Global Fund` = rcvd_tot_gf,
            `USAID` =  rcvd_tot_usaid,
@@ -746,7 +746,7 @@ server <- function(input, output, session) {
   df_g1 <- reactive({
     
     df_g1 <- budget %>%
-      select(country,iso3,year,
+      select(country,iso2,year,
              cf_fld,
              cf_staff,
              cf_prog,
@@ -817,7 +817,7 @@ server <- function(input, output, session) {
              gap_tpt = sum (budget_tpt, cf_tpt*(-1), na.rm = T),
              gap_oth = sum (budget_oth, cf_oth*(-1), na.rm = T)
       ) %>%
-      select(country,iso3,year,
+      select(country,iso2,year,
              gap_fld,
              gap_staff,
              gap_prog,
@@ -874,7 +874,7 @@ server <- function(input, output, session) {
   df_g3 <- reactive({
     
     df_g3 <- budget %>%
-      select(country,iso3,year,
+      select(country,iso2,year,
              `Total budget` = budget_tot ,
              `Total expected funding` = cf_tot
       ) %>%
@@ -917,7 +917,7 @@ server <- function(input, output, session) {
   df_d1 <- reactive({
     
     df_d1 <- budget %>%
-      select(country,iso3,year,
+      select(country,iso2,year,
              budget_cpp_dstb,
              budget_cpp_mdr,
              budget_cpp_tpt,
@@ -1136,7 +1136,7 @@ server <- function(input, output, session) {
   df_u1 <- reactive({
     
     df_u1 <- expend %>%
-      select(country, iso3, year, 
+      select(country, iso2, year, 
                        hcfvisit_dstb:hosp_type_mdr) %>%
       mutate(year=as.factor(year)) %>%
       arrange(country,year)  %>%
