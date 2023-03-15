@@ -45,18 +45,17 @@ NZ <- function(x) {
 
 # Load data
 
-finance_prev <- haven::read_stata("./csv/finance2022_13MAR2023.dta") %>%
-  mutate(cf_tpt=NA)
+finance_prev <- haven::read_stata("./csv/finance2021.dta")
 
-# budget_prev <- get_timestamped_csv('TB_budget', csv_datestamp)
-# expend_prev <- get_timestamped_csv('TB_expenditure_utilisation', csv_datestamp)
+budget_prev <- get_timestamped_csv('TB_budget', csv_datestamp)
+expend_prev <- get_timestamped_csv('TB_expenditure_utilisation', csv_datestamp)
 
 budget_temp <- get_timestamped_csv('latest_budgets', csv_datestamp) %>% mutate(year=2023) # dummy
 expend_temp <- get_timestamped_csv('latest_expenditures_services', csv_datestamp) %>% mutate(year=2022) # dummy
 
 notif_prev  <- get_timestamped_csv('TB_notifications', csv_datestamp) %>%
   filter(year>2005) %>%
-  select(country,iso2,year,
+  select(country,iso3,year,
          ret_nrel, c_newinc,
          conf_rrmdr_tx,unconf_mdr_tx,conf_mdr_tx,conf_xdr_tx,unconf_rr_nfqr_tx,conf_rr_nfqr_tx,conf_rr_fqr_tx
   ) %>%
@@ -79,26 +78,26 @@ tpt_prev <- get_timestamped_csv('TB_contact_tpt', csv_datestamp)
 tpt_temp <- get_timestamped_csv('latest_strategy', csv_datestamp) %>% mutate(year=2022) # dummy
 
 
-budget <- plyr::rbind.fill(finance_prev,budget_temp) %>% arrange(country) %>% filter(year>2005)
-expend <- plyr::rbind.fill(finance_prev,expend_temp) %>% arrange(country) %>% filter(year>2005)
+budget <- plyr::rbind.fill(budget_prev,budget_temp) %>% arrange(country)
+expend <- plyr::rbind.fill(expend_prev,expend_temp) %>% arrange(country)
 notif  <- plyr::rbind.fill(notif_prev,notif_temp) %>%
   select(country,year,c_notified,c_dstb_tx,c_rrmdr_tx,c_xdr_tx) %>%
   arrange(country)
 tpt <- plyr::rbind.fill(tpt_prev,tpt_temp) %>% arrange(country)
 
-# common_cols <- intersect(colnames(budget), colnames(finance_prev))
-# 
-# budget <- rbind(
-#   subset(budget, select = common_cols), 
-#   subset(finance_prev, year>2009, select = common_cols)
-# ) %>% arrange(country, year)
-# 
-# common_cols <- intersect(colnames(expend), colnames(finance_prev))
-# 
-# expend <- rbind(
-#   subset(expend, select = common_cols), 
-#   subset(finance_prev, year>2009, select = common_cols)
-# ) %>% arrange(country, year)
+common_cols <- intersect(colnames(budget), colnames(finance_prev))
+
+budget <- rbind(
+  subset(budget, select = common_cols), 
+  subset(finance_prev, year>2005&year<2018, select = common_cols)
+) %>% arrange(country, year)
+
+common_cols <- intersect(colnames(expend), colnames(finance_prev))
+
+expend <- rbind(
+  subset(expend, select = common_cols), 
+  subset(finance_prev, year>2005&year<2017, select = common_cols)
+) %>% arrange(country, year)
 
 
 
@@ -113,50 +112,50 @@ ui <-
       "Budget",
       # --------------------- Global, WHO regions, HBCs, GF etc ---------------------#
       fluidPage(theme = shinytheme("sandstone"),
-        # fluidRow(
-        #   column(width = 6, 
-        #          tags$div(style = "padding-left: 20px;"),
-        #          downloadButton('dl_fig_bud', 'Download (figures)')
-        #          ),      
-        #   column(width = 6,
-        #          tags$div(style = "padding-left: 20px;"),
-        #          downloadButton('dl_dat_bud', 'Download (data)')
-        #   )),      
-        # 
-        # br(),
-        
-        
-        fluidRow(tags$div(id = "page_header",
-                          HTML("Select a country"),
-                          uiOutput(outputId = "country"))
-        ),
-        
-        fluidRow(
-          column(width = 6,
-                 tags$div(style = "padding-left: 20px;"),
-                 textOutput("b1_heading", container = h3),
-                 echarts4rOutput("budget_plot1",height=600)
-          ),
-          column(width = 6,
-                 tags$div(style = "padding-left: 20px;"),
-                 textOutput("b2_heading", container = h3),
-                 echarts4rOutput("budget_plot2",height=600)
-          )),
-        
-        fluidRow(
-          column(width = 6,
-                 tags$div(style = "padding-left: 20px;"),
-                 textOutput("b3_heading", container = h3),
-                 echarts4rOutput("budget_plot3",height=600)
-          ),
-          column(width = 6,
-                 tags$div(style = "padding-left: 20px;"),
-                 textOutput("b4_heading", container = h3),
-                 echarts4rOutput("budget_plot4",height=600))
-        
-
+                # fluidRow(
+                #   column(width = 6, 
+                #          tags$div(style = "padding-left: 20px;"),
+                #          downloadButton('dl_fig_bud', 'Download (figures)')
+                #          ),      
+                #   column(width = 6,
+                #          tags$div(style = "padding-left: 20px;"),
+                #          downloadButton('dl_dat_bud', 'Download (data)')
+                #   )),      
+                # 
+                # br(),
+                
+                
+                fluidRow(tags$div(id = "page_header",
+                                  HTML("Select a country"),
+                                  uiOutput(outputId = "country"))
+                ),
+                
+                fluidRow(
+                  column(width = 6,
+                         tags$div(style = "padding-left: 20px;"),
+                         textOutput("b1_heading", container = h3),
+                         echarts4rOutput("budget_plot1",height=600)
+                  ),
+                  column(width = 6,
+                         tags$div(style = "padding-left: 20px;"),
+                         textOutput("b2_heading", container = h3),
+                         echarts4rOutput("budget_plot2",height=600)
+                  )),
+                
+                fluidRow(
+                  column(width = 6,
+                         tags$div(style = "padding-left: 20px;"),
+                         textOutput("b3_heading", container = h3),
+                         echarts4rOutput("budget_plot3",height=600)
+                  ),
+                  column(width = 6,
+                         tags$div(style = "padding-left: 20px;"),
+                         textOutput("b4_heading", container = h3),
+                         echarts4rOutput("budget_plot4",height=600))
+                  
+                  
+                )
       )
-    )
     ),
     
     tabPanel(
@@ -248,7 +247,7 @@ ui <-
         )
         
         
-        )),
+      )),
     
     tabPanel(
       "Drug cost per patient",
@@ -280,8 +279,8 @@ ui <-
                textOutput("d4_heading", container = h3),
                textOutput("d4_subheading", container = h3),
                echarts4rOutput("drug_plot4",height=600)
-               )
-        ),
+        )
+      ),
       
       fluidRow(
         column(width = 6,
@@ -298,7 +297,7 @@ ui <-
         )
       )
       
-      ),
+    ),
     
     tabPanel(
       "Utilization",
@@ -325,7 +324,7 @@ ui <-
       
     ),
     
-
+    
   )
 
 
@@ -337,8 +336,8 @@ ui <-
 server <- function(input, output, session) {
   
   json_url <- "https://extranet.who.int/tme/generateJSON.asp"
-
-# --------------------- Country ---------------------#
+  
+  # --------------------- Country ---------------------#
   
   # Get the latest list of countries with provisional data to use in country dropdown
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -377,7 +376,7 @@ server <- function(input, output, session) {
     selected_country <- country_list_json()$countries %>%
       filter(iso2 == input$iso2)
   })
-
+  
   #-- tab 1
   ## budget plot1: budget by line
   output$b1_heading <- renderText({ 
@@ -387,46 +386,46 @@ server <- function(input, output, session) {
   
   df_b1 <- reactive({
     
-  df_b1 <- budget %>%
-    select(country,iso2,year,
-           budget_fld,
-           budget_staff,
-           budget_prog,
-           budget_lab,
-           budget_tbhiv,
-           budget_sld,
-           budget_mdrmgt,
-           budget_orsrvy,
-           budget_patsup,
-           budget_tpt,
-           budget_oth
-    ) %>%
-    mutate(year=as.factor(year)) %>%
-    rename('1st-line drugs'=4,Staff=5,'Programme management'=6,Lab=7,'TB/HIV'=8,'2nd-line drugs'=9,'MDR management'=10,
-           'Research/surveys'=11,'Patient support'=12,'Preventive drugs'=13,'Other'=14) %>%
-    filter(country==selected_country()$country)
+    df_b1 <- budget %>%
+      select(country,iso3,year,
+             budget_fld,
+             budget_staff,
+             budget_prog,
+             budget_lab,
+             budget_tbhiv,
+             budget_sld,
+             budget_mdrmgt,
+             budget_orsrvy,
+             budget_patsup,
+             budget_tpt,
+             budget_oth
+      ) %>%
+      mutate(year=as.factor(year)) %>%
+      rename('1st-line drugs'=4,Staff=5,'Programme management'=6,Lab=7,'TB/HIV'=8,'2nd-line drugs'=9,'MDR management'=10,
+             'Research/surveys'=11,'Patient support'=12,'Preventive drugs'=13,'Other'=14) %>%
+      filter(country==selected_country()$country)
   })
   
   output$budget_plot1 <- renderEcharts4r({
-  
-    plot_b1 <- df_b1() %>% 
     
+    plot_b1 <- df_b1() %>% 
+      
       e_charts(year) %>%
-    e_bar(`1st-line drugs`, stack = "stack") %>%
-    e_bar(`Staff`, stack = "stack") %>%
-    e_bar(`Programme management`, stack = "stack") %>%
-    e_bar(`Lab`, stack = "stack") %>%
-    e_bar(`TB/HIV`, stack = "stack") %>%
-    e_bar(`2nd-line drugs`, stack = "stack") %>%
-    e_bar(`MDR management`, stack = "stack") %>%
-    e_bar(`Research/surveys`, stack = "stack") %>%
-    e_bar(`Patient support`, stack = "stack") %>%
-    e_bar(`Preventive drugs`, stack = "stack") %>%
-    e_bar(`Other`, stack = "stack") %>%
-    e_grid(containLabel = T) %>%
-    e_tooltip(trigger="item",
-              textStyle=list(fontFamily="arial", fontSize=12)) %>%
-    e_color(col) %>%
+      e_bar(`1st-line drugs`, stack = "stack") %>%
+      e_bar(`Staff`, stack = "stack") %>%
+      e_bar(`Programme management`, stack = "stack") %>%
+      e_bar(`Lab`, stack = "stack") %>%
+      e_bar(`TB/HIV`, stack = "stack") %>%
+      e_bar(`2nd-line drugs`, stack = "stack") %>%
+      e_bar(`MDR management`, stack = "stack") %>%
+      e_bar(`Research/surveys`, stack = "stack") %>%
+      e_bar(`Patient support`, stack = "stack") %>%
+      e_bar(`Preventive drugs`, stack = "stack") %>%
+      e_bar(`Other`, stack = "stack") %>%
+      e_grid(containLabel = T) %>%
+      e_tooltip(trigger="item",
+                textStyle=list(fontFamily="arial", fontSize=12)) %>%
+      e_color(col) %>%
       e_y_axis(
         name = "US$",
         nameLocation = "middle",
@@ -445,41 +444,41 @@ server <- function(input, output, session) {
   df_b2 <- reactive({
     
     df_b2 <- budget %>%
-      select(country,iso2,year,
-           `Domestic` = cf_tot_domestic ,
-           `Global Fund` = cf_tot_gf,
-           `USAID` =  cf_tot_usaid,
-           `Other external` =  cf_tot_grnt,
-           cf_tot,
-           `Total budget required` = budget_tot
-           ) %>%
+      select(country,iso3,year,
+             `Domestic` = cf_tot_domestic ,
+             `Global Fund` = cf_tot_gf,
+             `USAID` =  cf_tot_usaid,
+             `Other external` =  cf_tot_grnt,
+             cf_tot,
+             `Total budget required` = budget_tot
+      ) %>%
       mutate(year=as.factor(year),
-           Gap = `Total budget required` - cf_tot)  %>%
+             Gap = `Total budget required` - cf_tot)  %>%
       filter(country==selected_country()$country)
   })
   
   output$budget_plot2 <- renderEcharts4r({
     
-  plot_b2 <- df_b2() %>% 
-    e_charts(year) %>%
-    e_bar(`Domestic`, stack = "stack") %>%
-    e_bar(`Global Fund`, stack = "stack") %>%
-    e_bar(`USAID`, stack = "stack") %>%
-    e_bar(`Other external`, stack = "stack") %>%
-    e_bar(`Gap`, stack = "stack") %>%
-    e_grid(containLabel = T) %>%
-    e_tooltip(trigger="item",
-              textStyle=list(fontFamily="arial", fontSize=12)) %>%
-    e_color(col) %>%
-    e_y_axis(
-      name = "US$",
-      nameLocation = "middle",
-      nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
-    )
-  
-  
-  plot_b2
-  
+    plot_b2 <- df_b2() %>% 
+      e_charts(year) %>%
+      e_bar(`Domestic`, stack = "stack") %>%
+      e_bar(`Global Fund`, stack = "stack") %>%
+      e_bar(`USAID`, stack = "stack") %>%
+      e_bar(`Other external`, stack = "stack") %>%
+      e_bar(`Gap`, stack = "stack") %>%
+      e_grid(containLabel = T) %>%
+      e_tooltip(trigger="item",
+                textStyle=list(fontFamily="arial", fontSize=12)) %>%
+      e_color(col) %>%
+      e_y_axis(
+        name = "US$",
+        nameLocation = "middle",
+        nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
+      )
+    
+    
+    plot_b2
+    
   })
   
   ## budget plot3: total budget
@@ -490,21 +489,21 @@ server <- function(input, output, session) {
   output$budget_plot3 <- renderEcharts4r({
     
     plot_b3 <- df_b2() %>% 
-    e_charts(year) %>%
-    e_bar(`Total budget required`) %>%
-    e_grid(containLabel = T) %>%
-    e_tooltip(
-      trigger = "item",
-      axisPointer = list(
-        type = "shadow"
-      )
-    ) %>%
+      e_charts(year) %>%
+      e_bar(`Total budget required`) %>%
+      e_grid(containLabel = T) %>%
+      e_tooltip(
+        trigger = "item",
+        axisPointer = list(
+          type = "shadow"
+        )
+      ) %>%
       e_y_axis(
         name = "US$",
         nameLocation = "middle",
         nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
       )
-  
+    
     plot_b3
     
   })
@@ -517,37 +516,37 @@ server <- function(input, output, session) {
   df_b4 <- reactive({
     
     df_b4 <- notif %>%
-    full_join(select(budget, country, year, tx_dstb, tx_mdr, tx_xdr), by = c("country","year")) %>%
-    mutate(year=as.factor(year)) %>%
-    arrange(country)  %>% 
+      full_join(select(budget, country, year, tx_dstb, tx_mdr, tx_xdr), by = c("country","year")) %>%
+      mutate(year=as.factor(year)) %>%
+      arrange(country)  %>% 
       mutate(across(everything(), ~replace(., . ==  0 , NA))) %>%
-    filter(country==selected_country()$country)
+      filter(country==selected_country()$country)
     
-    })
-
+  })
+  
   output$budget_plot4 <- renderEcharts4r({
     
-  plot_b4 <- df_b4() %>% 
-    e_charts(year) %>%
-    e_line(c_notified, name = "All forms of TB notified") %>%
-    e_line(tx_dstb, name = "DS-TB starting tx (expected)", lineStyle = list(type = "dashed")) %>%
-    e_line(c_rrmdr_tx, name = "MDR/RR-TB started on tx") %>%
-    e_line(tx_mdr, name = "MDR/RR-TB starting tx (expected)", lineStyle = list(type = "dashed")) %>%
-    e_line(c_xdr_tx, name = "(Pre-)XDR-TB started on tx") %>%
-    e_line(tx_xdr, name = "(pre-)XDR-TB starting tx (expected)", lineStyle = list(type = "dashed")) %>%
-    e_grid(containLabel = T) %>%
-    e_y_axis(type = 'log') %>%
-    e_tooltip(trigger="item",
-              textStyle=list(fontFamily="arial", fontSize=12)) %>%
-    e_color(col) %>%
-    e_y_axis(
-      name = "Cases per year (log scale)",
-      nameLocation = "middle",
-      nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
-    )
-  
-  plot_b4
-  
+    plot_b4 <- df_b4() %>% 
+      e_charts(year) %>%
+      e_line(c_notified, name = "All forms of TB notified") %>%
+      e_line(tx_dstb, name = "DS-TB starting tx (expected)", lineStyle = list(type = "dashed")) %>%
+      e_line(c_rrmdr_tx, name = "MDR/RR-TB started on tx") %>%
+      e_line(tx_mdr, name = "MDR/RR-TB starting tx (expected)", lineStyle = list(type = "dashed")) %>%
+      e_line(c_xdr_tx, name = "(Pre-)XDR-TB started on tx") %>%
+      e_line(tx_xdr, name = "(pre-)XDR-TB starting tx (expected)", lineStyle = list(type = "dashed")) %>%
+      e_grid(containLabel = T) %>%
+      e_y_axis(type = 'log') %>%
+      e_tooltip(trigger="item",
+                textStyle=list(fontFamily="arial", fontSize=12)) %>%
+      e_color(col) %>%
+      e_y_axis(
+        name = "Cases per year (log scale)",
+        nameLocation = "middle",
+        nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
+      )
+    
+    plot_b4
+    
   })
   
   #-- tab 2
@@ -558,52 +557,52 @@ server <- function(input, output, session) {
   
   df_e1 <- reactive({
     
-  df_e1 <- expend %>%
-    select(country,iso2,year,
-           exp_fld,
-           exp_staff,
-           exp_prog,
-           exp_lab,
-           exp_tbhiv,
-           exp_sld,
-           exp_mdrmgt,
-           exp_orsrvy,
-           exp_patsup,
-           exp_tpt,
-           exp_oth
-    ) %>%
-    mutate(year=as.factor(year)) %>%
-    rename('1st-line drugs'=4,Staff=5,'Programme management'=6,Lab=7,'TB/HIV'=8,'2nd-line drugs'=9,'MDR management'=10,
-           'Research/surveys'=11,'Patient support'=12,'Preventive drugs'=13,'Other'=14)%>%
-    filter(country==selected_country()$country)
-  
+    df_e1 <- expend %>%
+      select(country,iso3,year,
+             exp_fld,
+             exp_staff,
+             exp_prog,
+             exp_lab,
+             exp_tbhiv,
+             exp_sld,
+             exp_mdrmgt,
+             exp_orsrvy,
+             exp_patsup,
+             exp_tpt,
+             exp_oth
+      ) %>%
+      mutate(year=as.factor(year)) %>%
+      rename('1st-line drugs'=4,Staff=5,'Programme management'=6,Lab=7,'TB/HIV'=8,'2nd-line drugs'=9,'MDR management'=10,
+             'Research/surveys'=11,'Patient support'=12,'Preventive drugs'=13,'Other'=14)%>%
+      filter(country==selected_country()$country)
+    
   })
   
   output$expend_plot1 <- renderEcharts4r({
-  
-  plot_e1 <- df_e1() %>% 
-    e_charts(year) %>%
-    e_bar(`1st-line drugs`, stack = "stack") %>%
-    e_bar(`Staff`, stack = "stack") %>%
-    e_bar(`Programme management`, stack = "stack") %>%
-    e_bar(`Lab`, stack = "stack") %>%
-    e_bar(`TB/HIV`, stack = "stack") %>%
-    e_bar(`2nd-line drugs`, stack = "stack") %>%
-    e_bar(`MDR management`, stack = "stack") %>%
-    e_bar(`Research/surveys`, stack = "stack") %>%
-    e_bar(`Patient support`, stack = "stack") %>%
-    e_bar(`Preventive drugs`, stack = "stack") %>%
-    e_bar(`Other`, stack = "stack") %>%
-    e_grid(containLabel = T) %>%
-    e_tooltip(trigger="item",
-              textStyle=list(fontFamily="arial", fontSize=12)) %>%
-    e_color(col) %>%
-    e_y_axis(
-      name = "US$",
-      nameLocation = "middle",
-      nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
-    )
-  
+    
+    plot_e1 <- df_e1() %>% 
+      e_charts(year) %>%
+      e_bar(`1st-line drugs`, stack = "stack") %>%
+      e_bar(`Staff`, stack = "stack") %>%
+      e_bar(`Programme management`, stack = "stack") %>%
+      e_bar(`Lab`, stack = "stack") %>%
+      e_bar(`TB/HIV`, stack = "stack") %>%
+      e_bar(`2nd-line drugs`, stack = "stack") %>%
+      e_bar(`MDR management`, stack = "stack") %>%
+      e_bar(`Research/surveys`, stack = "stack") %>%
+      e_bar(`Patient support`, stack = "stack") %>%
+      e_bar(`Preventive drugs`, stack = "stack") %>%
+      e_bar(`Other`, stack = "stack") %>%
+      e_grid(containLabel = T) %>%
+      e_tooltip(trigger="item",
+                textStyle=list(fontFamily="arial", fontSize=12)) %>%
+      e_color(col) %>%
+      e_y_axis(
+        name = "US$",
+        nameLocation = "middle",
+        nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
+      )
+    
   })
   
   ## expenditure plot2: received by line
@@ -612,52 +611,52 @@ server <- function(input, output, session) {
   })
   
   df_e2 <- reactive({
-
+    
     df_e2 <- expend %>%
-    select(country,iso2,year,
-           rcvd_fld,
-           rcvd_staff,
-           rcvd_prog,
-           rcvd_lab,
-           rcvd_tbhiv,
-           rcvd_sld,
-           rcvd_mdrmgt,
-           rcvd_orsrvy,
-           rcvd_patsup,
-           rcvd_tpt,
-           rcvd_oth
-    ) %>%
-    mutate(year=as.factor(year)) %>%
-    rename('1st-line drugs'=4,Staff=5,'Programme management'=6,Lab=7,'TB/HIV'=8,'2nd-line drugs'=9,'MDR management'=10,
-           'Research/surveys'=11,'Patient support'=12,'Preventive drugs'=13,'Other'=14) %>%
-    filter(country==selected_country()$country)
+      select(country,iso3,year,
+             rcvd_fld,
+             rcvd_staff,
+             rcvd_prog,
+             rcvd_lab,
+             rcvd_tbhiv,
+             rcvd_sld,
+             rcvd_mdrmgt,
+             rcvd_orsrvy,
+             rcvd_patsup,
+             rcvd_tpt,
+             rcvd_oth
+      ) %>%
+      mutate(year=as.factor(year)) %>%
+      rename('1st-line drugs'=4,Staff=5,'Programme management'=6,Lab=7,'TB/HIV'=8,'2nd-line drugs'=9,'MDR management'=10,
+             'Research/surveys'=11,'Patient support'=12,'Preventive drugs'=13,'Other'=14) %>%
+      filter(country==selected_country()$country)
   })  
   
   output$expend_plot2 <- renderEcharts4r({
     
-  plot_e2 <- df_e2() %>% 
-    e_charts(year) %>%
-    e_bar(`1st-line drugs`, stack = "stack") %>%
-    e_bar(`Staff`, stack = "stack") %>%
-    e_bar(`Programme management`, stack = "stack") %>%
-    e_bar(`Lab`, stack = "stack") %>%
-    e_bar(`TB/HIV`, stack = "stack") %>%
-    e_bar(`2nd-line drugs`, stack = "stack") %>%
-    e_bar(`MDR management`, stack = "stack") %>%
-    e_bar(`Research/surveys`, stack = "stack") %>%
-    e_bar(`Patient support`, stack = "stack") %>%
-    e_bar(`Preventive drugs`, stack = "stack") %>%
-    e_bar(`Other`, stack = "stack") %>%
-    e_grid(containLabel = T) %>%
-    e_tooltip(trigger="item",
-              textStyle=list(fontFamily="arial", fontSize=12)) %>%
-    e_color(col) %>%
-    e_y_axis(
-      name = "US$",
-      nameLocation = "middle",
-      nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
-    )
-  
+    plot_e2 <- df_e2() %>% 
+      e_charts(year) %>%
+      e_bar(`1st-line drugs`, stack = "stack") %>%
+      e_bar(`Staff`, stack = "stack") %>%
+      e_bar(`Programme management`, stack = "stack") %>%
+      e_bar(`Lab`, stack = "stack") %>%
+      e_bar(`TB/HIV`, stack = "stack") %>%
+      e_bar(`2nd-line drugs`, stack = "stack") %>%
+      e_bar(`MDR management`, stack = "stack") %>%
+      e_bar(`Research/surveys`, stack = "stack") %>%
+      e_bar(`Patient support`, stack = "stack") %>%
+      e_bar(`Preventive drugs`, stack = "stack") %>%
+      e_bar(`Other`, stack = "stack") %>%
+      e_grid(containLabel = T) %>%
+      e_tooltip(trigger="item",
+                textStyle=list(fontFamily="arial", fontSize=12)) %>%
+      e_color(col) %>%
+      e_y_axis(
+        name = "US$",
+        nameLocation = "middle",
+        nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
+      )
+    
   }) 
   
   ## expenditure plot3: received by source
@@ -668,39 +667,39 @@ server <- function(input, output, session) {
   df_e3 <- reactive({
     
     df_e3 <- expend %>%
-    select(country,iso2,year,
-           `Domestic` = rcvd_tot_domestic ,
-           `Global Fund` = rcvd_tot_gf,
-           `USAID` =  rcvd_tot_usaid,
-           `Other external` =  rcvd_tot_grnt,
-           `Received total` =  rcvd_tot,
-           `Expended total` =  exp_tot
-    ) %>%
-    mutate(year=as.factor(year),
-           `Percentage of expended to received (right axis)` = round(`Expended total`/`Received total`*100),0) %>%
-    filter(country==selected_country()$country)
+      select(country,iso3,year,
+             `Domestic` = rcvd_tot_domestic ,
+             `Global Fund` = rcvd_tot_gf,
+             `USAID` =  rcvd_tot_usaid,
+             `Other external` =  rcvd_tot_grnt,
+             `Received total` =  rcvd_tot,
+             `Expended total` =  exp_tot
+      ) %>%
+      mutate(year=as.factor(year),
+             `Percentage of expended to received (right axis)` = round(`Expended total`/`Received total`*100),0) %>%
+      filter(country==selected_country()$country)
     
   }) 
   
   col3 <- c("#A6CEE3","#33A02C","limegreen","#B2DF8A") 
   
   output$expend_plot3 <- renderEcharts4r({
-  plot_e3 <- df_e3() %>% 
-    e_charts(year) %>%
-    e_bar(`Domestic`, stack = "stack") %>%
-    e_bar(`Global Fund`, stack = "stack") %>%
-    e_bar(`USAID`, stack = "stack") %>%
-    e_bar(`Other external`, stack = "stack") %>%
-    e_grid(containLabel = T) %>%
-    e_tooltip(trigger="item",
-              textStyle=list(fontFamily="arial", fontSize=12)) %>%
-    e_color(col3) %>%
-    e_y_axis(
-      name = "US$",
-      nameLocation = "middle",
-      nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
-    )
-  
+    plot_e3 <- df_e3() %>% 
+      e_charts(year) %>%
+      e_bar(`Domestic`, stack = "stack") %>%
+      e_bar(`Global Fund`, stack = "stack") %>%
+      e_bar(`USAID`, stack = "stack") %>%
+      e_bar(`Other external`, stack = "stack") %>%
+      e_grid(containLabel = T) %>%
+      e_tooltip(trigger="item",
+                textStyle=list(fontFamily="arial", fontSize=12)) %>%
+      e_color(col3) %>%
+      e_y_axis(
+        name = "US$",
+        nameLocation = "middle",
+        nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
+      )
+    
   })
   
   ## expenditure plot4: Total received and expended
@@ -711,32 +710,32 @@ server <- function(input, output, session) {
   col2 <- c("#A6CEE3","#1F78B4","#E31A1C") 
   
   output$expend_plot4 <- renderEcharts4r({
-  plot_e4 <- df_e3() %>% 
-    e_charts(year) %>%
-    e_bar(`Received total`) %>%
-    e_bar(`Expended total`) %>%
-    e_line(`Percentage of expended to received (right axis)`, y_index = 1)  %>%
+    plot_e4 <- df_e3() %>% 
+      e_charts(year) %>%
+      e_bar(`Received total`) %>%
+      e_bar(`Expended total`) %>%
+      e_line(`Percentage of expended to received (right axis)`, y_index = 1)  %>%
+      
+      e_y_axis(
+        name = "US$",
+        nameLocation = "middle",
+        nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
+      ) %>%
+      
+      e_y_axis(
+        index = 1,
+        name = "Percentage",
+        nameLocation = "middle",
+        axisLabel = list(formatter = e_axis_formatter(style = "decimal", locale = "ru")),
+        nameTextStyle = list(fontSize = 18, padding = c(40, 0, 60, 0))
+      ) %>%
+      e_grid(containLabel = T) %>%
+      e_tooltip(trigger="item",
+                textStyle=list(fontFamily="arial", fontSize=12)) %>%
+      e_color(col2)
     
-    e_y_axis(
-      name = "US$",
-      nameLocation = "middle",
-      nameTextStyle = list(fontSize = 18, padding = c(0, 0, 60, 0))
-    ) %>%
-    
-    e_y_axis(
-      index = 1,
-      name = "Percentage",
-      nameLocation = "middle",
-      axisLabel = list(formatter = e_axis_formatter(style = "decimal", locale = "ru")),
-      nameTextStyle = list(fontSize = 18, padding = c(40, 0, 60, 0))
-    ) %>%
-    e_grid(containLabel = T) %>%
-    e_tooltip(trigger="item",
-              textStyle=list(fontFamily="arial", fontSize=12)) %>%
-    e_color(col2)
-  
   })
-
+  
   #-- tab 3: Gap
   ## gap plot1: expected funding by line
   output$g1_heading <- renderText({ 
@@ -747,7 +746,7 @@ server <- function(input, output, session) {
   df_g1 <- reactive({
     
     df_g1 <- budget %>%
-      select(country,iso2,year,
+      select(country,iso3,year,
              cf_fld,
              cf_staff,
              cf_prog,
@@ -795,7 +794,7 @@ server <- function(input, output, session) {
     plot_g1
     
   })
-
+  
   ## gap plot2: Gap by line
   output$g2_heading <- renderText({ 
     paste("Fig.2: Funding gap by line")
@@ -818,7 +817,7 @@ server <- function(input, output, session) {
              gap_tpt = sum (budget_tpt, cf_tpt*(-1), na.rm = T),
              gap_oth = sum (budget_oth, cf_oth*(-1), na.rm = T)
       ) %>%
-      select(country,iso2,year,
+      select(country,iso3,year,
              gap_fld,
              gap_staff,
              gap_prog,
@@ -875,7 +874,7 @@ server <- function(input, output, session) {
   df_g3 <- reactive({
     
     df_g3 <- budget %>%
-      select(country,iso2,year,
+      select(country,iso3,year,
              `Total budget` = budget_tot ,
              `Total expected funding` = cf_tot
       ) %>%
@@ -918,7 +917,7 @@ server <- function(input, output, session) {
   df_d1 <- reactive({
     
     df_d1 <- budget %>%
-      select(country,iso2,year,
+      select(country,iso3,year,
              budget_cpp_dstb,
              budget_cpp_mdr,
              budget_cpp_tpt,
@@ -934,8 +933,8 @@ server <- function(input, output, session) {
                        exp_fld, exp_sld, exp_tpt
       ), by = c("country","year")) %>%
       full_join(select(tpt, country, year, 
-                     newinc_con_prevtx
-    ), by = c("country","year")) %>%
+                       newinc_con_prevtx
+      ), by = c("country","year")) %>%
       full_join(select(notif, country, year, 
                        c_notified,
                        c_rrmdr_tx,
@@ -949,7 +948,7 @@ server <- function(input, output, session) {
              est_expend_cpp_dstb = round(exp_fld/c_dstb_tx,0),
              est_expend_cpp_mdr  = round(exp_sld/c_rrmdr_tx,0),
              est_expend_cpp_tpt  = round(exp_tpt/newinc_con_prevtx,1),
-               ) %>%
+      ) %>%
       arrange(country,year)  %>%
       filter(country==selected_country()$country)
     
@@ -959,7 +958,7 @@ server <- function(input, output, session) {
   # "#A6CEE3" "#1F78B4" "#B2DF8A" "#33A02C"
   # "#FB9A99" "#E31A1C" "#FDBF6F" "#FF7F00"
   # "#CAB2D6" "#6A3D9A" "#FFFF99" "#B15928"
-
+  
   output$drug_plot2 <- renderEcharts4r({
     
     plot_d1 <- df_d1() %>% 
@@ -1019,7 +1018,7 @@ server <- function(input, output, session) {
   output$d4_subheading <- renderText({ 
     paste("(average reported by country)")
   })
-
+  
   output$drug_plot4 <- renderEcharts4r({
     
     plot_d3 <- df_d1() %>% 
@@ -1068,7 +1067,7 @@ server <- function(input, output, session) {
     plot_d4
     
   })
-
+  
   ## drug plot3: TPT drug cost 
   output$d6_heading <- renderText({ 
     paste("Fig.3b: Cost per patient: TPT drugs")
@@ -1138,8 +1137,8 @@ server <- function(input, output, session) {
     
     df_u1 <- expend %>%
       filter(year>2008) %>%
-      select(country, iso2, year, 
-                       hcfvisit_dstb:hosp_type_mdr) %>%
+      select(country, iso3, year, 
+             hcfvisit_dstb:hosp_type_mdr) %>%
       mutate(year=as.factor(year)) %>%
       arrange(country,year)  %>%
       filter(country==selected_country()$country)
@@ -1165,7 +1164,7 @@ server <- function(input, output, session) {
     plot_u1
     
   })
-
+  
   ## utilization plot2: Hospitalization rate
   output$u2_heading <- renderText({ 
     paste("Fig.2: Hospitalization rate")
@@ -1190,7 +1189,7 @@ server <- function(input, output, session) {
     plot_u2
     
   })
-
+  
   
   ## utilization plot3: Hospitalization rate
   output$u3_heading <- renderText({ 
@@ -1222,4 +1221,3 @@ server <- function(input, output, session) {
 # Run the application
 shinyApp(ui = ui, server = server)
 
-  
