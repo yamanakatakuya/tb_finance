@@ -2,5 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-
-/tb_finance.Rproj
+.Rproj
+_old/
+rsconnect/
+tb_finance.Rproj

@@ -528,11 +528,11 @@ server <- function(input, output, session) {
     
     plot_b4 <- df_b4() %>% 
       e_charts(year) %>%
-      e_line(c_notified, name = "All forms of TB notified") %>%
+      e_line(c_dstb_tx, name = "DS-TB notified") %>%
       e_line(tx_dstb, name = "DS-TB starting tx (expected)", lineStyle = list(type = "dashed")) %>%
-      e_line(c_rrmdr_tx, name = "MDR/RR-TB started on tx") %>%
+      e_line(c_rrmdr_tx, name = "MDR/RR-TB started tx") %>%
       e_line(tx_mdr, name = "MDR/RR-TB starting tx (expected)", lineStyle = list(type = "dashed")) %>%
-      e_line(c_xdr_tx, name = "(Pre-)XDR-TB started on tx") %>%
+      e_line(c_xdr_tx, name = "(Pre-)XDR-TB started tx") %>%
       e_line(tx_xdr, name = "(pre-)XDR-TB starting tx (expected)", lineStyle = list(type = "dashed")) %>%
       e_grid(containLabel = T) %>%
       e_y_axis(type = 'log') %>%
