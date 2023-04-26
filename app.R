@@ -29,6 +29,7 @@ library(here)
 
 report_year <- 2022
 csv_datestamp <- '2023-02-28'
+csv_datestamp2 <- '2023-04-26' # change the date everytime 
 col <-  RColorBrewer::brewer.pal(12,"Paired")
 
 # Function to read in timestamped CSV file and to undo Philippe's conversion of underscores to dots
@@ -51,8 +52,8 @@ finance_prev <- haven::read_stata("./csv/finance2022_13MAR2023.dta") %>%
 # budget_prev <- get_timestamped_csv('TB_budget', csv_datestamp)
 # expend_prev <- get_timestamped_csv('TB_expenditure_utilisation', csv_datestamp)
 
-budget_temp <- get_timestamped_csv('latest_budgets', csv_datestamp) %>% mutate(year=2023) # dummy
-expend_temp <- get_timestamped_csv('latest_expenditures_services', csv_datestamp) %>% mutate(year=2022) # dummy
+budget_temp <- get_timestamped_csv('latest_budgets', csv_datestamp2) 
+expend_temp <- get_timestamped_csv('latest_expenditures_services', csv_datestamp2) 
 
 notif_prev  <- get_timestamped_csv('TB_notifications', csv_datestamp) %>%
   filter(year>2005) %>%
@@ -67,7 +68,6 @@ notif_prev  <- get_timestamped_csv('TB_notifications', csv_datestamp) %>%
          c_xdr_tx = sum (conf_xdr_tx,conf_rr_fqr_tx,na.rm=T))
 
 notif_temp  <- get_timestamped_csv('latest_notifications', csv_datestamp) %>%
-  mutate(year=2022) %>% # dummy
   select(country,iso2,year,
          c_notified,
          c_rrmdr_tx = conf_rr_nfqr_tx,
@@ -76,11 +76,11 @@ notif_temp  <- get_timestamped_csv('latest_notifications', csv_datestamp) %>%
   mutate(c_dstb_tx = c_notified - c_rrmdr_tx)
 
 tpt_prev <- get_timestamped_csv('TB_contact_tpt', csv_datestamp)
-tpt_temp <- get_timestamped_csv('latest_strategy', csv_datestamp) %>% mutate(year=2022) # dummy
+tpt_temp <- get_timestamped_csv('latest_strategy', csv_datestamp2) 
 
 
 budget <- plyr::rbind.fill(finance_prev,budget_temp) %>% arrange(country) %>% filter(year>2005)
-expend <- plyr::rbind.fill(finance_prev,expend_temp) %>% arrange(country) %>% filter(year>2005)
+expend <- plyr::rbind.fill(filter(finance_prev,year<report_year),expend_temp) %>% arrange(country) %>% filter(year>2005)
 notif  <- plyr::rbind.fill(notif_prev,notif_temp) %>%
   select(country,year,c_notified,c_dstb_tx,c_rrmdr_tx,c_xdr_tx) %>%
   arrange(country)
