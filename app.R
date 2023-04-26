@@ -67,7 +67,7 @@ notif_prev  <- get_timestamped_csv('TB_notifications', csv_datestamp) %>%
          c_dstb_tx = c_notified - c_rrmdr_tx,
          c_xdr_tx = sum (conf_xdr_tx,conf_rr_fqr_tx,na.rm=T))
 
-notif_temp  <- get_timestamped_csv('latest_notifications', csv_datestamp) %>%
+notif_temp  <- get_timestamped_csv('latest_notifications', csv_datestamp2) %>%
   select(country,iso2,year,
          c_notified,
          c_rrmdr_tx = conf_rr_nfqr_tx,
