@@ -29,7 +29,7 @@ library(here)
 
 report_year <- 2022
 csv_datestamp <- '2023-02-28'
-csv_datestamp2 <- '2023-04-27' # change the date everytime 
+csv_datestamp2 <- '2023-04-28' # change the date everytime 
 col <-  RColorBrewer::brewer.pal(12,"Paired")
 
 # Function to read in timestamped CSV file and to undo Philippe's conversion of underscores to dots
@@ -108,7 +108,7 @@ tpt <- plyr::rbind.fill(tpt_prev,tpt_temp) %>% arrange(country)
 
 ui <- 
   navbarPage(
-    "TB Finance Data Review",
+    "TB Finance Data Review - Cleaned data!",
     tabPanel(
       "Budget",
       # --------------------- Global, WHO regions, HBCs, GF etc ---------------------#
@@ -125,11 +125,18 @@ ui <-
         # 
         # br(),
         
+
         
         fluidRow(tags$div(id = "page_header",
                           HTML("Select a country"),
                           uiOutput(outputId = "country"))
         ),
+        
+        br(),
+        
+        fluidRow(tags$div(id = "date_notice",
+                          HTML(paste("Data are provisional as of",csv_datestamp2)))
+        ),     
         
         fluidRow(
           column(width = 6,
@@ -163,15 +170,10 @@ ui <-
       "Funding gap",
       # --------------------- gap tab ---------------------#
       fluidPage(
-        # fluidRow(
-        #   column(width = 6,
-        #          tags$div(style = "padding-left: 20px;"),
-        #          downloadButton('dl_fig_gap', 'Download (figures)')
-        #   ),      
-        #   column(width = 6,
-        #          tags$div(style = "padding-left: 20px;"),
-        #          downloadButton('dl_dat_gap', 'Download (data)')
-        #   )),      
+ 
+        fluidRow(tags$div(id = "date_notice2",
+                          HTML(paste("Data are provisional as of",csv_datestamp2)))
+        ),    
         
         br(),
         
@@ -209,17 +211,13 @@ ui <-
       "Expenditure",
       # --------------------- Expenditure tab ---------------------#
       fluidPage(
-        # fluidRow(
-        #   column(width = 6,
-        #          tags$div(style = "padding-left: 20px;"),
-        #          downloadButton('dl_fig_exp', 'Download (figures)')
-        #   ),      
-        #   column(width = 6,
-        #          tags$div(style = "padding-left: 20px;"),
-        #          downloadButton('dl_dat_exp', 'Download (data)')
-        #   )),      
-        # 
-        # br(),
+
+
+        fluidRow(tags$div(id = "date_notice3",
+                          HTML(paste("Data are provisional as of",csv_datestamp2)))
+        ),     
+        br(),
+        
         
         fluidRow(
           column(width = 6,
@@ -253,6 +251,11 @@ ui <-
     tabPanel(
       "Drug cost per patient",
       # --------------------- Drug cost tab ---------------------#
+      fluidPage(     
+        fluidRow(tags$div(id = "date_notice4",
+                        HTML(paste("Data are provisional as of",csv_datestamp2)))
+      ),     
+      br(),
       
       fluidRow(
         column(width = 6,
@@ -298,11 +301,17 @@ ui <-
         )
       )
       
-      ),
+      )),
     
     tabPanel(
       "Utilization",
       # --------------------- Service utilization tab ---------------------#
+      fluidPage(         
+      fluidRow(tags$div(id = "date_notice5",
+                        HTML(paste("Data are provisional as of",csv_datestamp2)))
+      ),     
+      br(),
+      
       fluidRow(
         column(width = 6,
                tags$div(style = "padding-left: 20px;"),
@@ -323,7 +332,7 @@ ui <-
         )
       ),
       
-    ),
+    )),
     
 
   )
