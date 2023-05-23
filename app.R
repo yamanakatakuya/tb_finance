@@ -29,7 +29,11 @@ library(here)
 
 report_year <- 2022
 csv_datestamp <- '2023-02-28'
+<<<<<<< HEAD
 csv_datestamp2 <- '2023-05-23' # change the date everytime 
+=======
+csv_datestamp2 <- '2023-05-17' # change the date everytime 
+>>>>>>> d19431054238fd3cca0e61307dc4ffb592fa6afe
 col <-  RColorBrewer::brewer.pal(12,"Paired")
 
 # Function to read in timestamped CSV file and to undo Philippe's conversion of underscores to dots
